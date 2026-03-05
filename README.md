@@ -1,7 +1,7 @@
 # Emby Worker Proxy（Cloudflare Workers + D1）
 
 基于 Cloudflare Workers 的 Emby 前后端分离反代。  
-支持后台管理（`/admin`）、节点管理、分流/直连兼容与 D1 持久化存储。
+支持后台管理（`/admin`）、节点管理、统一/分离兼容与 D1 持久化存储。
 
 ---
 
@@ -55,51 +55,41 @@
 - `CAPY_STRIP_EMBY`：兼容性开关（默认 `0`）
 - `CORS_ALLOW_ORIGIN`：自定义 CORS 来源（可留空）
 
-### 6）绑定自定义域名（优选域名）
+### 6）配置 DNS（CNAME 到优选域名）
 
-在 Worker → 触发器（Triggers）→ 自定义域（Custom Domains）添加入口域名，例如：
+在 Cloudflare DNS 记录中新增 CNAME，把你的入口子域名指向优选域名：
 
-- `emby.yourdomain.com`
+- 类型：`CNAME`
+- 名称：例如 `emby`（即 `emby.你的域名`）
+- 内容：第三方优选域名
+- TTL：自动
+- 代理状态：按你的方案选择（常用 `仅 DNS`）
 
-建议优先使用 Custom Domain 方式，路由更稳定、维护更简单。
 
-### 7）DNS 配置说明（含 `*` 记录）
+### 7）可选：添加泛解析 `*`
 
-如果使用 Custom Domain，DNS 记录通常会自动处理。  
-如果你采用手动 DNS / Route 方式，可按需添加：
+如果你希望未单独配置的子域也指向同一优选域名，可再添加：
 
-- `CNAME emby -> 你的 workers.dev 子域（橙云）`
-- 如需泛子域访问，再加：`CNAME * -> 你的 workers.dev 子域（橙云）`
+- 类型：`CNAME`
+- 名称：`*`
+- 内容：第三方优选域名
+- TTL：自动
+- 代理状态：按你的方案选择（常用 `仅 DNS`）
 
-并在 Worker Routes 中配置（示例）：
-
-- `emby.yourdomain.com/*`
-- `*.yourdomain.com/*`（仅在确实需要泛子域时启用）
+注意：`*` 会影响未单独配置的所有子域，建议确认后再启用。
 
 ### 8）访问后台
 
 打开：`https://你的域名/admin`  
 使用 `ADMIN_TOKEN` 登录后即可添加节点。
 
----
+### 9）在后台添加节点时的填写建议
 
-## 更新发布建议
-
-每次更新代码建议按以下流程：
-
-1. 修改 `worker.js`（本地或 GitHub 网页）
-2. 提交 commit（例如：`fix: xxx`）
-3. 如有文档变化，同步更新 `README.md`
-4. 发布新版本 Tag / Release（如 `v1.0.1`）
-
----
-
-## 安全建议
-
-- 不要把真实 `ADMIN_TOKEN`、数据库 ID、私有域名提交到公开仓库
-- 建议定期轮换 `ADMIN_TOKEN`
-- 公网服务建议配合访问控制策略（如 WAF / Access）
-
+- 名称：自定义（如 `emby`）
+- 目标地址：源emby服务器地址
+- 代理地址：你的域名+节点自定义（如  https://emby.你的域名/emby）
+- 模式：按你的使用场景选择统一 / 分离模式
+- 密钥路径：可选
 ---
 
 ## 免责声明
