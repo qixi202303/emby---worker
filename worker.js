@@ -1,3 +1,5 @@
+// CF EMBY PROXY UI - V19.6.3-thirdparty-layoutfix-20260228
+
 const GLOBALS = {
   NodeCache: new Map(),
   NodeHostIndexCache: new Map(),
@@ -3735,4 +3737,3 @@ export default {
     return ProxyHandler.handleDirect(request, directRaw, env);
   },
 };
-
